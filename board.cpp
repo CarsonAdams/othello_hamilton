@@ -45,9 +45,9 @@ bool Board::onBoard(int x, int y) {
     return(0 <= x && x < 8 && 0 <= y && y < 8);
 }
 
- 
+
 /*
- * Returns true if the game is finished; false otherwise. The game is finished 
+ * Returns true if the game is finished; false otherwise. The game is finished
  * if neither side has a legal move.
  */
 bool Board::isDone() {
@@ -177,4 +177,29 @@ void Board::setBoard(char data[]) {
             taken.set(i);
         }
     }
+}
+
+/*
+ * Returns a vector of legal moves.
+ */
+vector<Move> Board::getMoves(Side side) {
+    vector<Move> moves;
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            Move move(i, j);
+            if (checkMove(&move, side))
+            {
+                moves.push_back(move);
+            }
+        }
+    }
+    return moves;
+}
+
+/*
+ * Current count of given side's stones.
+ */
+int Board::score(Side side) {
+    return (side == BLACK) ?
+    countBlack() - countWhite() : countWhite() - countBlack();
 }
