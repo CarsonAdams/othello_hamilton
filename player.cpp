@@ -1,5 +1,6 @@
 #include "player.h"
-#define MIN       (-64)
+#define MIN       (-200)
+#define comp(tempH, H, pm)           ((pm) == 1 ? (tempH) > (H) : (tempH) < (H))
 
 /*
  * PLAYERNAME = hamilton
@@ -17,6 +18,8 @@ Player::Player(Side mySide) {
     side = mySide;
     other = (side == BLACK) ? WHITE : BLACK;
     board = new Board();
+    depth = 6;
+    mult = 6;
 }
 
 /*
@@ -49,29 +52,8 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
         for (int i = 0; i<size; i++)
         {
             Board *temp = board->copy();
-            temp->doMove(&(moves[i]), side);
-            vector<Move> moves2 = temp->getMoves(other);
-            int size2 = moves2.size();
-            int tempH;
-            if (size2)
-            {
-                int H2 = -MIN;
-                for (int j = 0; j<size2; j++)
-                {
-                    Board *temp2 = temp->copy();
-                    temp2->doMove(&(moves2[j]), other);
-                    int tempH2 = temp2->count(side) - temp2->count(other);
-                    if (tempH2 < H2)
-                    {
-                        H2 = tempH2;
-                    }
-                }
-                tempH = H2;
-            }
-            else
-            {
-                tempH = temp->count(side) - temp->count(other);
-            }
+            temp->doMove((&moves[i]), side);
+            int tempH = minimaxScore(temp, other, depth-1);
             if (tempH > H)
             {
                 H = tempH;
@@ -84,4 +66,44 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     }
 
     return NULL;
+}
+
+/*
+ * Compute minimax score.
+ */
+
+int Player::minimaxScore(Board *cboard, Side cside, int cdepth) {
+
+    int pm = -2*(side^cside) + 1;
+    Side cother = (cside == BLACK) ? WHITE : BLACK;
+
+    if (cdepth == 0) return (cboard->score(side));
+
+    vector<Move> cmoves = cboard->getMoves(cside);
+    int csize = cmoves.size();
+
+    if (csize)
+    {
+        int H = pm * MIN;
+        for (int i = 0; i < csize; i++)
+        {
+            Board *ctemp = cboard->copy();
+            ctemp->doMove((&cmoves[i]), cside);
+            int tempH = minimaxScore(ctemp, cother, cdepth-1);
+            int x = (cmoves[i]).getX();
+            int y = (cmoves[i]).getY();
+            if ((x == 0 && y == 0) || (x == 7 && y == 0) ||
+                (x == 0 && y == 7) || (x == 7 && y == 7))
+            {
+                tempH = tempH + pm * mult;
+            }
+            if (comp(tempH, H, pm))
+            {
+                H = tempH;
+            }
+        }
+        return H;
+    }
+    else return minimaxScore(cboard->copy(), cother, cdepth-1);
+
 }

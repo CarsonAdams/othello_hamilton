@@ -15,12 +15,13 @@ private:
 public:
     Board *board;
     int depth;
+    int mult;
 
     Player(Side mySide);
     ~Player();
 
     Move *doMove(Move *opponentsMove, int msLeft);
-    int minimaxScore(Board *cboard, Move *cmove, Side cside, int cdepth);
+    int minimaxScore(Board *cboard, Side cside, int cdepth);
 
     // Flag to tell if the player is running within the test_minimax context
     bool testingMinimax;
